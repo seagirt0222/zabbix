@@ -1,0 +1,67 @@
+version: '3'
+services: 
+
+  zabbix_mysql:
+    container_name: "zabbix_mysql"
+    restart: "always"
+    image: mariadb
+    ports:
+      - "3306:3306"
+    volumes:
+      - /data/docker/mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "mysqlpss123"
+      MYSQL_USER: "zabbix"
+      MYSQL_PASSWORD: "mysqlpss123"
+      MYSQL_DATABASE: "zabbix"
+
+  zabbix_server:
+    container_name: "zabbix_server"
+    restart: "always"
+    image: zabbix/zabbix-server-mysql
+    ports:
+      - "10051:10051"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /data/docker/zabbix:/usr/lib/zabbix
+    depends_on:
+      - zabbix_mysql
+    links:
+      - zabbix_mysql:mysql
+    environment:
+      DB_SERVER_HOST: "mysql"
+      MYSQL_USER: "zabbix"
+      MYSQL_DATABASE: "zabbix"
+      MYSQL_PASSWORD: "mysqlpss123"
+
+  zabbix_nginx_web:
+    container_name: "zabbix_nginx_web"
+    restart: "always"
+    image: zabbix/zabbix-web-nginx-mysql
+    ports:
+      - "8443:443"
+      - "80:8080"
+    depends_on:
+      - zabbix_mysql
+      - zabbix_server
+    links:
+      - zabbix_mysql:mysql
+      - zabbix_server:zabbix_server
+    environment:
+      DB_SERVER_HOST: "mysql"
+      MYSQL_USER: "zabbix"
+      MYSQL_PASSWORD: "mysqlpss123"
+      MYSQL_DATABASE: "zabbix"
+      ZBX_SERVER_HOST: "zabbix_server"
+      PHP_TZ: "Asia/Shanghai"
+  zabbix-agent-a:
+    image: zabbix/zabbix-agent
+    links: 
+      - zabbix_server:zabbix_server
+    container_name: zabbix-agent-a
+    restart: always
+    depends_on:
+      - zabbix_server
+    environment:
+      - ZBX_HOSTNAME=zabbix-agent-a  
+      - ZBX_SERVER_HOST=zabbix_server 
