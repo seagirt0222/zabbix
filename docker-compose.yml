@@ -19,6 +19,7 @@ services:
       - MYSQL_DATABASE=zabbix
       - MYSQL_USER=zabbix
       - MYSQL_PASSWORD=carryontech
+      - TZ=Asia/Taipei
 
   zabbix-server:
     container_name: zabbix-server
@@ -37,6 +38,7 @@ services:
       - MYSQL_DATABASE=zabbix
       - MYSQL_USER=zabbix
       - MYSQL_PASSWORD=carryontech
+      - TZ=Asia/Taipei
     depends_on:
       - mysql
 
@@ -73,6 +75,7 @@ services:
       - '3000:3000'
     environment: 
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
+      - TZ=Asia/Taipei
     depends_on:
       - mysql
       - zabbix-server
