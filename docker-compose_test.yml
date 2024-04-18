@@ -1,0 +1,95 @@
+version: '3'
+
+services:
+  zabbix-web-nginx-mysql:
+    image: zabbix/zabbix-web-nginx-mysql:centos-5.2-latest
+    restart: always
+    environment:
+      - DB_SERVER_HOST=zabbix-mysql
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_ROOT_PASSWORD=123qwe
+      - ZBX_SERVER_HOST=zabbix-server-mysql
+    ports:
+      - 8080:8080
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - /data2/zabbix/fonts/DejaVuSans.ttf:/usr/share/zabbix/assets/fonts/DejaVuSans.ttf
+    networks:
+      - zbx_net
+    depends_on:
+      - zabbix-server-mysql
+      - zabbix-mysql
+  zabbix-mysql:
+    image: mysql:8.0.23
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_ROOT_PASSWORD=123qwe
+    command:
+      - mysqld
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8
+      - --collation-server=utf8_bin
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - /data2/zabbix/db:/var/lib/mysql
+    networks:
+      - zbx_net
+  zabbix-java-gateway:
+    image: zabbix/zabbix-java-gateway:centos-5.2-latest
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime
+    networks:
+      - zbx_net
+  zabbix-server-mysql:
+    image: zabbix/zabbix-server-mysql:centos-5.2-latest
+    restart: always
+    volumes:
+      - zabbix-server-vol:/etc/zabbix
+      - /data2/zabbix/alertscripts:/usr/lib/zabbix/alertscripts
+      - /etc/localtime:/etc/localtime
+    ports:
+      - 10051:10051
+    environment:
+      - DB_SERVER_HOST=zabbix-mysql
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_ROOT_PASSWORD=123qwe
+      - ZBX_JAVAGATEWAY=zabbix-java-gateway
+      - ZBX_JAVAGATEWAY_ENABLE=true
+      - ZBX_JAVAGATEWAYPORT=10052
+    depends_on:
+      - zabbix-mysql
+    networks:
+      - zbx_net
+  zabbix-agent:
+    image: zabbix/zabbix-agent:centos-5.2-latest
+    restart: always
+    ports:
+      - 10050:10050
+    environment:
+      - ZBX_HOSTNAME=Zabbix server
+      - ZBX_SERVER_HOST=zabbix-server-mysql
+      - ZBX_SERVER_PORT=10051
+    networks:
+      - zbx_net
+
+networks:
+  zbx_net:
+    driver: bridge
+
+volumes:
+  zabbix-server-vol:
+
+作者：sunbin
+链接：https://juejin.cn/post/7085020149761179661
+来源：稀土掘金
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
