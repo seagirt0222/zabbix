@@ -5,6 +5,8 @@ services:
     container_name: "zabbix_mysql"
     restart: "always"
     image: mariadb
+    security_opt:
+      - seccomp:unconfined
     ports:
       - "3306:3306"
     volumes:
