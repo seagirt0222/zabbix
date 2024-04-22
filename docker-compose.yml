@@ -8,6 +8,8 @@ services:
   mysql:
     container_name: mysql
     image: mysql:5.7
+    security_opt:
+      - seccomp:unconfined
     networks:
       - network-zabbix
     ports:
