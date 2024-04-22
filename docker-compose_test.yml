@@ -24,6 +24,8 @@ services:
   zabbix-mysql:
     image: mysql:8.0.23
     restart: always
+    security_opt:
+      - seccomp:unconfined
     ports:
       - 3306:3306
     environment:
@@ -51,6 +53,8 @@ services:
   zabbix-server-mysql:
     image: zabbix/zabbix-server-mysql:centos-5.2-latest
     restart: always
+    security_opt:
+      - seccomp:unconfined
     volumes:
       - zabbix-server-vol:/etc/zabbix
       - /data2/zabbix/alertscripts:/usr/lib/zabbix/alertscripts
